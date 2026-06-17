@@ -246,202 +246,201 @@
     </footer>
 
     <!-- LOGICAL APP ENGINE SCRIPT -->
-    <script>
-        // Core Encapsulated Application State Engine Context
-        const appState = {
-            geoQuery: '',
-            apiKey: '',
-            inventory: [],
-            currentRoundIndex: 0,
-            accumulatedScore: 0
-        };
+// Core Encapsulated Application State Engine Context
+const appState = {
+    geoQuery: '',
+    apiKey: '',
+    inventory: [],
+    currentRoundIndex: 0,
+    accumulatedScore: 0
+};
 
-        const domScreens = {
-            welcome: document.getElementById('screen-welcome'),
-            gameplay: document.getElementById('screen-gameplay'),
-            summary: document.getElementById('screen-summary')
-        };
+const domScreens = {
+    welcome: document.getElementById('screen-welcome'),
+    gameplay: document.getElementById('screen-gameplay'),
+    summary: document.getElementById('screen-summary')
+};
 
-        function routeToScreen(targetScreen) {
-            Object.values(domScreens).forEach(screen => screen.classList.add('hidden'));
-            domScreens[targetScreen].classList.remove('hidden');
+function routeToScreen(targetScreen) {
+    Object.values(domScreens).forEach(screen => screen.classList.add('hidden'));
+    domScreens[targetScreen].classList.remove('hidden');
+}
+
+/**
+ * Initialize App Engine State Context & Fetch Data Assets
+ */
+async function launchAppEngine() {
+    const geoInp = document.getElementById('geo-target').value.trim();
+    const keyInp = document.getElementById('api-key').value.trim();
+
+    if (!geoInp) { alert('Please supply a target geographic location index.'); return; }
+    if (!keyInp) { alert('Please supply a valid RentCast API Key.'); return; }
+
+    appState.geoQuery = geoInp;
+    appState.apiKey = keyInp;
+
+    // Update Trigger Buttons to Loading States
+    const actionBtn = document.getElementById('start-game-btn');
+    actionBtn.innerText = "Querying RentCast MLS Infrastructure...";
+    actionBtn.disabled = true;
+
+    // Ingest active real estate market data indexes
+    appState.inventory = await executeLiveMlsFetch(appState.geoQuery, appState.apiKey);
+
+    if (appState.inventory.length === 0) {
+        alert("Failed to resolve active listings inside the specified location. Ensure your API token is valid and you're searching a US City or Zip Code.");
+        actionBtn.innerText = "Scan Local MLS Listings";
+        actionBtn.disabled = false;
+        return;
+    }
+
+    // Expose active evaluation HUD elements
+    document.getElementById('nav-score-container').classList.remove('hidden');
+    routeToScreen('gameplay');
+    populateRoundMetrics();
+}
+
+/**
+ * Sync Properties and Layout Attributes per Round Instance
+ */
+function populateRoundMetrics() {
+    // Reset Valuation Layout Blocks
+    document.getElementById('evaluation-dashboard').classList.add('hidden');
+    document.getElementById('valuation-console').classList.remove('opacity-40', 'pointer-events-none');
+    document.getElementById('valuation-guess-input').value = '';
+    document.getElementById('valuation-guess-input').disabled = false;
+
+    const property = appState.inventory[appState.currentRoundIndex];
+
+    // Render Metrics Targets
+    document.getElementById('round-current-label').innerText = appState.currentRoundIndex + 1;
+    document.getElementById('property-canvas').src = property.imgSrc;
+    document.getElementById('property-title-geo').innerText = property.address;
+    document.getElementById('metric-beds').innerText = property.beds || 'N/A';
+    document.getElementById('metric-baths').innerText = property.baths || 'N/A';
+    document.getElementById('metric-sqft').innerText = property.sqft ? property.sqft.toLocaleString() : 'N/A';
+    document.getElementById('property-marketing-narrative').innerText = property.description;
+}
+
+/**
+ * Process and Grade User Price Speculations
+ */
+function commitPlayerValuation() {
+    const userRawGuess = document.getElementById('valuation-guess-input').value;
+    if (!userRawGuess || userRawGuess <= 0) { alert('Please input a proper real-number valuation context.'); return; }
+
+    const numericGuess = parseInt(userRawGuess);
+    const verifiedActualPrice = appState.inventory[appState.currentRoundIndex].actualPrice;
+
+    // Valuation Proximity Grader Formula
+    const trackingVariance = Math.abs(numericGuess - verifiedActualPrice) / verifiedActualPrice;
+    const pointsYield = Math.max(0, Math.round((1 - trackingVariance) * 1000));
+
+    appState.accumulatedScore += pointsYield;
+
+    // Lock UI Fields
+    document.getElementById('valuation-console').classList.add('opacity-40', 'pointer-events-none');
+    document.getElementById('valuation-guess-input').disabled = true;
+
+    // Hydrate Analysis Dashboards
+    document.getElementById('feedback-actual-price').innerText = `$${verifiedActualPrice.toLocaleString()}`;
+    document.getElementById('feedback-points-delta').innerText = `+${pointsYield.toLocaleString()}`;
+    document.getElementById('feedback-lbl-guess').innerText = `$${numericGuess.toLocaleString()}`;
+    
+    // Render Error Variances
+    const percentageVarianceDisplay = Math.round(trackingVariance * 100);
+    const varianceLabel = document.getElementById('feedback-lbl-variance');
+    if (numericGuess === verifiedActualPrice) {
+        varianceLabel.innerText = "Perfect Match!";
+        varianceLabel.className = "text-emerald-400 font-bold";
+    } else {
+        varianceLabel.innerText = `${percentageVarianceDisplay}% ${numericGuess > verifiedActualPrice ? 'Above' : 'Below'} List`;
+        varianceLabel.className = "font-mono font-bold text-pink-400";
+    }
+
+    // Animate Quality Gauge Slider
+    const matchAccuracyMultiplier = Math.max(0, 1 - trackingVariance);
+    document.getElementById('proximity-bar-fill').style.width = `${matchAccuracyMultiplier * 100}%`;
+
+    // Update Structural Top Score Displays
+    document.getElementById('nav-score-display').innerText = appState.accumulatedScore.toLocaleString();
+    document.getElementById('cumulative-score-display').innerText = appState.accumulatedScore.toLocaleString();
+
+    document.getElementById('evaluation-dashboard').classList.remove('hidden');
+}
+
+/**
+ * Cycle Across Round Iterators or Route to Summary Viewports
+ */
+function stepToNextProperty() {
+    if (appState.currentRoundIndex < appState.inventory.length - 1) {
+        appState.currentRoundIndex++;
+        populateRoundMetrics();
+    } else {
+        routeToScreen('summary');
+        document.getElementById('summary-final-score').innerText = appState.accumulatedScore.toLocaleString();
+        
+        const tierElement = document.getElementById('summary-tier-badge');
+        if (appState.accumulatedScore >= 4500) {
+            tierElement.innerText = "Tier 1: Master Broker / Real Estate Legend";
+            tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        } else if (appState.accumulatedScore >= 3500) {
+            tierElement.innerText = "Tier 2: Certified Local Appraiser";
+            tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+        } else if (appState.accumulatedScore >= 2000) {
+            tierElement.innerText = "Tier 3: Casual Zillow Scroller";
+            tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/20";
+        } else {
+            tierElement.innerText = "Tier 4: Volatile Speculator";
+            tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-pink-500/10 text-pink-400 border border-pink-500/20";
         }
+    }
+}
 
-        /**
-         * Initialize App Engine State Context & Fetch Data Assets
-         */
-        async function launchAppEngine() {
-            const geoInp = document.getElementById('geo-target').value.trim();
-            const keyInp = document.getElementById('api-key').value.trim();
-
-            if (!geoInp) { alert('Please supply a target geographic location index.'); return; }
-            if (!keyInp) { alert('Please supply a valid RapidAPI authorization key.'); return; }
-
-            appState.geoQuery = geoInp;
-            appState.apiKey = keyInp;
-
-            // Update Trigger Buttons to Loading States
-            const actionBtn = document.getElementById('start-game-btn');
-            actionBtn.innerText = "Querying MLS Infrastructure Database...";
-            actionBtn.disabled = true;
-
-            // Ingest active real estate market data indexes
-            appState.inventory = await executeLiveMlsFetch(appState.geoQuery, appState.apiKey);
-
-            if (appState.inventory.length === 0) {
-                alert("Failed to resolve properties inside the specified location parameter. Double check your API token or targeted zone.");
-                actionBtn.innerText = "Scan Local MLS Listings";
-                actionBtn.disabled = false;
-                return;
+/**
+ * Direct Live Fetch Integration using RentCast API Architecture
+ */
+async function executeLiveMlsFetch(targetRegion, keyToken) {
+    // Check if user entered a 5-digit zip code or a city string
+    const isZip = /^\d{5}$/.test(targetRegion);
+    const queryParam = isZip ? `zipCode=${targetRegion}` : `city=${encodeURIComponent(targetRegion)}`;
+    
+    const endpointUrl = `https://api.rentcast.io/v1/listings/active?${queryParam}&status=For%20Sale&limit=20`;
+    
+    try {
+        const networkResponse = await fetch(endpointUrl, {
+            method: 'GET',
+            headers: {
+                'X-Api-Key': keyToken,
+                'accept': 'application/json'
             }
+        });
+        
+        if (!networkResponse.ok) throw new Error('RentCast Server Error');
+        const listings = await networkResponse.json();
+        
+        if (!listings || listings.length === 0) return [];
 
-            // Expose active evaluation HUD elements
-            document.getElementById('nav-score-container').classList.remove('hidden');
-            routeToScreen('gameplay');
-            populateRoundMetrics();
-        }
+        // Filter for records that contain real images and valid listing pricing metrics
+        const sanitizedPool = listings.filter(item => item.price && item.images && item.images.length > 0);
+        
+        // Shuffle and take a 5-round subset
+        const selectedItems = sanitizedPool.sort(() => 0.5 - Math.random()).slice(0, 5);
+        
+        return selectedItems.map(home => ({
+            imgSrc: home.images[0],
+            address: `${home.city || targetRegion}, ${home.state || ''}`,
+            beds: home.bedrooms,
+            baths: home.bathrooms,
+            sqft: home.squareFeet || 0,
+            description: home.propertyType ? `A premier active ${home.propertyType.toLowerCase()} listing optimized for residential market acquisition.` : "Active MLS listing with exceptional structural features.",
+            actualPrice: parseInt(home.price)
+        }));
 
-        /**
-         * Sync Properties and Layout Attributes per Round Instance
-         */
-        function populateRoundMetrics() {
-            // Reset Valuation Layout Blocks
-            document.getElementById('evaluation-dashboard').classList.add('hidden');
-            document.getElementById('valuation-console').classList.remove('opacity-40', 'pointer-events-none');
-            document.getElementById('valuation-guess-input').value = '';
-            document.getElementById('valuation-guess-input').disabled = false;
-
-            const property = appState.inventory[appState.currentRoundIndex];
-
-            // Render Metrics Targets
-            document.getElementById('round-current-label').innerText = appState.currentRoundIndex + 1;
-            document.getElementById('property-canvas').src = property.imgSrc;
-            document.getElementById('property-title-geo').innerText = property.address;
-            document.getElementById('metric-beds').innerText = property.beds || 'N/A';
-            document.getElementById('metric-baths').innerText = property.baths || 'N/A';
-            document.getElementById('metric-sqft').innerText = property.sqft ? property.sqft.toLocaleString() : 'N/A';
-            document.getElementById('property-marketing-narrative').innerText = property.description;
-        }
-
-        /**
-         * Process and Grade User Price Speculations
-         */
-        function commitPlayerValuation() {
-            const userRawGuess = document.getElementById('valuation-guess-input').value;
-            if (!userRawGuess || userRawGuess <= 0) { alert('Please input a proper real-number valuation context.'); return; }
-
-            const numericGuess = parseInt(userRawGuess);
-            const verifiedActualPrice = appState.inventory[appState.currentRoundIndex].actualPrice;
-
-            // Valuation Proximity Grader Formula
-            const trackingVariance = Math.abs(numericGuess - verifiedActualPrice) / verifiedActualPrice;
-            const pointsYield = Math.max(0, Math.round((1 - trackingVariance) * 1000));
-
-            appState.accumulatedScore += pointsYield;
-
-            // Lock UI Fields
-            document.getElementById('valuation-console').classList.add('opacity-40', 'pointer-events-none');
-            document.getElementById('valuation-guess-input').disabled = true;
-
-            // Hydrate Analysis Dashboards
-            document.getElementById('feedback-actual-price').innerText = `$${verifiedActualPrice.toLocaleString()}`;
-            document.getElementById('feedback-points-delta').innerText = `+${pointsYield.toLocaleString()}`;
-            document.getElementById('feedback-lbl-guess').innerText = `$${numericGuess.toLocaleString()}`;
-            
-            // Render Error Variances
-            const percentageVarianceDisplay = Math.round(trackingVariance * 100);
-            const varianceLabel = document.getElementById('feedback-lbl-variance');
-            if (numericGuess === verifiedActualPrice) {
-                varianceLabel.innerText = "Perfect Match!";
-                varianceLabel.className = "text-emerald-400 font-bold";
-            } else {
-                varianceLabel.innerText = `${percentageVarianceDisplay}% ${numericGuess > verifiedActualPrice ? 'Above' : 'Below'} List`;
-                varianceLabel.className = "font-mono font-bold text-pink-400";
-            }
-
-            // Animate Quality Gauge Slider
-            const matchAccuracyMultiplier = Math.max(0, 1 - trackingVariance);
-            document.getElementById('proximity-bar-fill').style.width = `${matchAccuracyMultiplier * 100}%`;
-
-            // Update Structural Top Score Displays
-            document.getElementById('nav-score-display').innerText = appState.accumulatedScore.toLocaleString();
-            document.getElementById('cumulative-score-display').innerText = appState.accumulatedScore.toLocaleString();
-
-            document.getElementById('evaluation-dashboard').classList.remove('hidden');
-        }
-
-        /**
-         * Cycle Across Round Iterators or Route to Summary Viewports
-         */
-        function stepToNextProperty() {
-            if (appState.currentRoundIndex < appState.inventory.length - 1) {
-                appState.currentRoundIndex++;
-                populateRoundMetrics();
-            } else {
-                // Compile and Trigger Finalized Performance Report
-                routeToScreen('summary');
-                document.getElementById('summary-final-score').innerText = appState.accumulatedScore.toLocaleString();
-                
-                // Assign Knowledge Tier Badges based on performance
-                const tierElement = document.getElementById('summary-tier-badge');
-                if (appState.accumulatedScore >= 4500) {
-                    tierElement.innerText = "Tier 1: Master Broker / Real Estate Legend";
-                    tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                } else if (appState.accumulatedScore >= 3500) {
-                    tierElement.innerText = "Tier 2: Certified Local Appraiser";
-                    tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
-                } else if (appState.accumulatedScore >= 2000) {
-                    tierElement.innerText = "Tier 3: Casual Zillow Scroller";
-                    tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/20";
-                } else {
-                    tierElement.innerText = "Tier 4: Volatile Speculator";
-                    tierElement.className = "mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-pink-500/10 text-pink-400 border border-pink-500/20";
-                }
-            }
-        }
-
-        /**
-         * Fetch Pipeline to RapidAPI Real Estate Index Mirrored Endpoints
-         */
-        async function executeLiveMlsFetch(targetRegion, keyToken) {
-            const endpointUrl = `https://zillow-com1.p.rapidapi.com/propertyExtendedSearch?location=${encodeURIComponent(targetRegion)}&status_type=ForSale`;
-            
-            try {
-                const networkResponse = await fetch(endpointUrl, {
-                    method: 'GET',
-                    headers: {
-                        'X-RapidAPI-Key': keyToken,
-                        'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
-                    }
-                });
-                
-                if (!networkResponse.ok) throw new Error('API Request Error');
-                const rawData = await networkResponse.json();
-                
-                if (!rawData || !rawData.props || rawData.props.length === 0) return [];
-
-                // Sanitize and purge items containing invalid images or structural listings missing prices
-                const sanitizedPool = rawData.props.filter(item => item.price && item.imgSrc && !item.imgSrc.includes('comingsoon'));
-                
-                // Shuffle pool elements to ensure high uniqueness per session instance
-                const selectedItems = sanitizedPool.sort(() => 0.5 - Math.random()).slice(0, 5);
-                
-                return selectedItems.map(home => ({
-                    imgSrc: home.imgSrc,
-                    // Strip specific street addresses to retain data anonymity and prevent easy cheating lookups
-                    address: `${home.city || targetRegion}, ${home.state || ''}`,
-                    beds: home.bedrooms || home.beds || 'N/A',
-                    baths: home.bathrooms || home.baths || 'N/A',
-                    sqft: home.livingArea || home.squareFeet || 0,
-                    description: home.homeType ? `An exceptionally located ${home.homeType.toLowerCase()} currently configured for active market acquisition.` : "Active single-family property containing representative local structural dimensions.",
-                    actualPrice: parseInt(home.price)
-                }));
-
-            } catch (err) {
-                console.error("Critical Ingestion Failure:", err);
-                return [];
-            }
-        }
-    </script>
+    } catch (err) {
+        console.error("RentCast Connection Failure:", err);
+        return [];
+    }
+}
 </body>
 </html>
