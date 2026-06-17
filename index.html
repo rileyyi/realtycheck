@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realty Check | Serverless Solo Edition</title>
+    <title>Realty Check | Live Data Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
@@ -14,8 +14,9 @@
         button:active { transform: scale(0.98); }
     </style>
 </head>
-<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col justify-between">
 
+    <!-- Top Navigation -->
     <header class="border-b border-slate-800/80 bg-[#0e1424]/60 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
@@ -25,10 +26,10 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="heading-font text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+                    <h1 class="heading-font text-2xl font-bold tracking-tight text-white">
                         Realty <span class="text-indigo-400">Check</span>
                     </h1>
-                    <p class="text-[10px] tracking-widest text-indigo-400/80 font-bold uppercase -mt-0.5">Zero API Serverless Edition</p>
+                    <p class="text-[10px] tracking-widest text-emerald-400 font-bold uppercase -mt-0.5">Live Public MLS Engine</p>
                 </div>
             </div>
             
@@ -39,34 +40,338 @@
         </div>
     </header>
 
+    <!-- Main Viewport -->
     <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow flex items-center justify-center">
 
-        <section id="screen-welcome" class="w-full max-w-xl bg-[#0f172a] p-8 rounded-3xl border border-slate-800/80 shadow-2xl relative overflow-hidden">
-            <div class="text-center mb-8">
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-widest">No API Required</span>
-                <h2 class="heading-font text-3xl font-extrabold text-white mt-3 tracking-tight">Test Your Real Estate Intuition</h2>
-                <p class="text-sm text-slate-400 mt-2 max-w-sm mx-auto">Select a regional market profile below. The engine will deploy actual properties curated directly from active lists.</p>
+        <!-- SCREEN 1: GEO-TARGET INPUT -->
+        <section id="screen-welcome" class="w-full max-w-xl bg-[#0f172a] p-8 rounded-3xl border border-slate-800/80 shadow-2xl">
+            <div class="text-center mb-6">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">No API Key Mode</span>
+                <h2 class="heading-font text-3xl font-extrabold text-white mt-3 tracking-tight">Real-Time Market Challenge</h2>
+                <p class="text-sm text-slate-400 mt-2">Pulls live public listings straight from current transaction feeds.</p>
             </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Select Market Environment</label>
-                    <select id="market-region" class="w-full bg-[#070a13] border border-slate-800 rounded-2xl px-4 py-4 text-white font-medium focus:outline-none focus:border-indigo-500 transition-all text-base appearance-none cursor-pointer">
-                        <option value="ALL">All Mixed National Listings (Randomized)</option>
-                        <option value="METRO">Major Metro & Luxury Lofts (High Value)</option>
-                        <option value="SUBURB">Suburban Family Neighborhoods</option>
-                        <option value="COASTAL">Coastal & Waterfront Properties</option>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Target Geographic Region</label>
+                    <input type="text" id="geo-target" class="w-full bg-[#070a13] border border-slate-800 rounded-2xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-indigo-500 transition-all text-base" placeholder="e.g., Castro Valley, CA or 94546">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Market Dataset Context</label>
+                    <select id="market-status" class="w-full bg-[#070a13] border border-slate-800 rounded-2xl px-4 py-3.5 text-white font-medium focus:outline-none focus:border-indigo-500 transition-all text-base cursor-pointer">
+                        <option value="active">Active Homes For Sale (Current List Price)</option>
+                        <option value="sold">Recently Sold Properties (Final Transaction Value)</option>
                     </select>
                 </div>
 
                 <div class="pt-2">
-                    <button id="start-game-btn" onclick="launchLocalEngine()" class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-95 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-indigo-500/10 tracking-wide uppercase text-sm transition-transform duration-150 transform hover:-translate-y-0.5">
-                        Launch Market Challenge
+                    <button id="start-game-btn" onclick="launchLiveEngine()" class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-indigo-500/10 tracking-wide uppercase text-sm transition-transform duration-150 transform hover:-translate-y-0.5">
+                        Scan Live Market Data
                     </button>
                 </div>
             </div>
         </section>
 
+        <!-- SCREEN 2: ACTIVE GAMEPLAY PIPELINE -->
         <section id="screen-gameplay" class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch hidden">
             
-            <div class="lg:col-span-7 bg-
+            <!-- Left Side Frame: Street View & Metadata -->
+            <div class="lg:col-span-7 bg-[#0f172a] rounded-3xl border border-slate-800/80 shadow-xl overflow-hidden flex flex-col justify-between">
+                <div class="relative aspect-[16/10] w-full bg-slate-950">
+                    <!-- Live Google Street View placeholder based on dynamic geolocation coordinates -->
+                    <img id="property-canvas" src="" alt="Property View" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60"></div>
+                    
+                    <div class="absolute top-4 left-4 bg-[#070a13]/80 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-mono font-bold text-indigo-400 border border-slate-800/60">
+                        Property <span id="round-current-label">1</span> <span class="text-slate-600">/</span> 5
+                    </div>
+                </div>
+
+                <div class="p-6 flex-grow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between mb-3">
+                            <h3 id="property-title-geo" class="text-xl font-bold tracking-tight text-white heading-font">-</h3>
+                            <span id="property-tag" class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 uppercase tracking-wider font-mono">-</span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 text-center text-xs mb-4">
+                            <div class="bg-[#070a13]/60 p-3 rounded-2xl border border-slate-800/60">
+                                <span class="block text-slate-500 font-bold uppercase tracking-wider text-[10px] mb-0.5">Beds</span>
+                                <span id="metric-beds" class="font-mono text-lg font-bold text-slate-200">-</span>
+                            </div>
+                            <div class="bg-[#070a13]/60 p-3 rounded-2xl border border-slate-800/60">
+                                <span class="block text-slate-500 font-bold uppercase tracking-wider text-[10px] mb-0.5">Baths</span>
+                                <span id="metric-baths" class="font-mono text-lg font-bold text-slate-200">-</span>
+                            </div>
+                            <div class="bg-[#070a13]/60 p-3 rounded-2xl border border-slate-800/60">
+                                <span class="block text-slate-500 font-bold uppercase tracking-wider text-[10px] mb-0.5">Sq Ft</span>
+                                <span id="metric-sqft" class="font-mono text-lg font-bold text-slate-200">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#070a13]/30 p-4 rounded-xl border border-slate-800/40 text-xs text-slate-400">
+                        <span class="block text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-1">Market Context Metrics</span>
+                        Year Built: <span id="metric-year" class="text-slate-200 font-mono mr-4">-</span> 
+                        Property Type: <span id="metric-type" class="text-slate-200 font-mono">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side Frame: Interactions -->
+            <div class="lg:col-span-5 flex flex-col justify-between gap-6">
+                <div id="valuation-console" class="bg-[#0f172a] p-6 rounded-3xl border border-slate-800/80 shadow-xl">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Your Price Estimation</h3>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl font-bold font-mono">$</span>
+                            <input type="number" id="valuation-guess-input" class="w-full bg-[#070a13] border border-slate-800 rounded-2xl pl-10 pr-4 py-4 text-2xl font-mono font-bold text-white focus:outline-none focus:border-indigo-500 transition-all" placeholder="000,000" onkeydown="if(event.key==='Enter') commitPlayerValuation()">
+                        </div>
+                        <button onclick="commitPlayerValuation()" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-4 px-4 rounded-2xl transition duration-150 uppercase tracking-wider text-xs">
+                            Submit Valuation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Evaluation HUD -->
+                <div id="evaluation-dashboard" class="bg-[#0f172a] p-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-[#0f172a] to-emerald-950/10 shadow-xl hidden">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-slate-800/60">
+                            <div>
+                                <span id="actual-price-lbl" class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Actual Price</span>
+                                <div id="feedback-actual-price" class="text-3xl font-mono font-black text-emerald-400">$0,000,000</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Reward</span>
+                                <div id="feedback-points-delta" class="text-3xl font-mono font-black text-teal-400">+0</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-slate-500 uppercase font-bold mb-1">
+                                <span>Your Estimate: <span id="feedback-lbl-guess" class="font-mono text-slate-300"></span></span>
+                                <span id="feedback-lbl-variance"></span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden">
+                                <div id="proximity-bar-fill" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button onclick="stepToNextProperty()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl transition text-xs uppercase tracking-wider border border-slate-700">
+                            Next Property &rarr;
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-[#0f172a] p-6 rounded-3xl border border-slate-800/80 shadow-xl flex-grow flex flex-col justify-center items-center text-center py-6">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Total Game Score</span>
+                    <div id="cumulative-score-display" class="text-6xl font-mono font-black text-white">0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: END SUMMARY -->
+        <section id="screen-summary" class="w-full max-w-xl bg-[#0f172a] p-8 rounded-3xl border border-slate-800/80 shadow-2xl text-center hidden">
+            <h2 class="heading-font text-3xl font-extrabold text-white tracking-tight">Market Analysis Complete!</h2>
+            <div class="my-8 bg-[#070a13] border border-slate-800 rounded-2xl p-6">
+                <span class="text-xs uppercase font-bold text-slate-500 tracking-wider block mb-1">Final Score</span>
+                <div id="summary-final-score" class="text-6xl font-mono font-black text-indigo-400">0</div>
+                <div id="summary-tier-badge" class="mt-3 inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">-</div>
+            </div>
+            <button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-6 rounded-2xl border border-slate-700 transition uppercase tracking-wider text-xs">
+                Analyze Another Market
+            </button>
+        </section>
+    </main>
+
+    <script>
+        const appState = {
+            inventory: [],
+            currentRoundIndex: 0,
+            accumulatedScore: 0,
+            mode: 'active'
+        };
+
+        async function launchLiveEngine() {
+            const geoInput = document.getElementById('geo-target').value.trim();
+            const statusMode = document.getElementById('market-status').value;
+            appState.mode = statusMode;
+
+            if (!geoInput) { alert('Please enter a city or ZIP code.'); return; }
+
+            const actionBtn = document.getElementById('start-game-btn');
+            actionBtn.innerText = "Querying Live Transaction Feeds...";
+            actionBtn.disabled = true;
+
+            // Step 1: Resolve geographic location using open-source OpenStreetMap geocoder
+            const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&addressdetails=1&limit=1`;
+            try {
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+                
+                if (!geoData || geoData.length === 0) {
+                    throw new Error("Could not resolve location boundary.");
+                }
+
+                const location = geoData[0];
+                const stateCode = (location.address.state_code || location.address.state || "").toUpperCase();
+                const cityName = location.address.city || location.address.town || location.address.suburb || geoInput;
+
+                // Step 2: Fetch Redfin's real-time raw transactional dataset via unblocked public CORS gateway
+                const statusParam = statusMode === 'active' ? '1' : '2'; // 1 = For Sale, 2 = Recently Sold
+                const csvTargetUrl = `https://www.redfin.com/stingray/api/gis-csv?al=1&market=sanfrancisco&orders_by=1&page_number=1&num_homes=350&status=${statusParam}&uipt=1,2,3,4,5,6&v=8&regions=city::664`; 
+                
+                // Generic global fallback URL structure for search targets using bounds
+                const boundsParam = `xmin=${parseFloat(location.boundingbox[2])}&xmax=${parseFloat(location.boundingbox[3])}&ymin=${parseFloat(location.boundingbox[0])}&ymax=${parseFloat(location.boundingbox[1])}`;
+                const completeRedfinUrl = `https://www.redfin.com/stingray/api/gis-csv?al=1&orders_by=1&num_homes=200&status=${statusParam}&uipt=1,2,3,4,5,6&v=8&${boundsParam}`;
+
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(completeRedfinUrl)}`;
+                
+                const dataRes = await fetch(proxyUrl);
+                if (!dataRes.ok) throw new Error("CORS proxy layer drop.");
+                const rawCsvText = await dataRes.text();
+
+                // Step 3: Parse CSV payload records
+                const lines = rawCsvText.split('\n');
+                if (lines.length < 2) throw new Error("Zero listings returned inside spatial bounds.");
+
+                const headers = lines[0].split(',');
+                
+                // Build tracking index map
+                const getIndex = (name) => headers.findIndex(h => h.toLowerCase().replace(/["\r]/g, '').trim() === name.toLowerCase());
+                const idxPrice = getIndex('price');
+                const idxBeds = getIndex('beds');
+                const idxBaths = getIndex('baths');
+                const idxSqft = getIndex('square feet');
+                const idxAddr = getIndex('address');
+                const idxLat = getIndex('latitude');
+                const idxLon = getIndex('longitude');
+                const idxYear = getIndex('year built');
+                const idxType = getIndex('property type');
+
+                const parsingPool = [];
+                for(let i = 1; i < lines.length; i++) {
+                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Regex to correctly parse commas inside quotes
+                    if (row.length === headers.length && row[idxPrice] && row[idxLat]) {
+                        const price = parseInt(row[idxPrice].replace(/["\r]/g, ''));
+                        const lat = parseFloat(row[idxLat].replace(/["\r]/g, ''));
+                        const lon = parseFloat(row[idxLon].replace(/["\r]/g, ''));
+                        
+                        if (!isNaN(price) && !isNaN(lat)) {
+                            parsingPool.push({
+                                address: row[idxAddr]?.replace(/["\r]/g, '') || 'Unknown Address',
+                                price: price,
+                                beds: row[idxBeds]?.replace(/["\r]/g, '') || 'N/A',
+                                baths: row[idxBaths]?.replace(/["\r]/g, '') || 'N/A',
+                                sqft: parseInt(row[idxSqft]?.replace(/["\r]/g, '')) || 0,
+                                year: row[idxYear]?.replace(/["\r]/g, '') || 'N/A',
+                                type: row[idxType]?.replace(/["\r]/g, '') || 'Residential Property',
+                                // Dynamically render a clean street-facing layout using Google Maps Street View static asset platform
+                                imgSrc: `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${lat},${lon}&fov=90&heading=235&pitch=10&key=` 
+                            });
+                        }
+                    }
+                }
+
+                if(parsingPool.length === 0) throw new Error("No valid properties resolved in bounds.");
+
+                // Select 5 random items from the live listing stream
+                appState.inventory = parsingPool.sort(() => 0.5 - Math.random()).slice(0, 5);
+                
+                document.getElementById('screen-welcome').classList.add('hidden');
+                document.getElementById('screen-gameplay').classList.remove('hidden');
+                document.getElementById('nav-score-container').classList.remove('hidden');
+                populateRoundMetrics();
+
+            } catch (err) {
+                console.error(err);
+                alert("Could not load live data for this specific area. Try utilizing a standard 5-digit ZIP code or major city center framework instead.");
+                actionBtn.innerText = "Scan Live Market Data";
+                actionBtn.disabled = false;
+            }
+        }
+
+        function populateRoundMetrics() {
+            document.getElementById('evaluation-dashboard').classList.add('hidden');
+            document.getElementById('valuation-console').classList.remove('opacity-40', 'pointer-events-none');
+            document.getElementById('valuation-guess-input').value = '';
+            document.getElementById('valuation-guess-input').disabled = false;
+
+            const property = appState.inventory[appState.currentRoundIndex];
+
+            document.getElementById('round-current-label').innerText = appState.currentRoundIndex + 1;
+            document.getElementById('property-canvas').src = property.imgSrc;
+            document.getElementById('property-title-geo').innerText = property.address;
+            document.getElementById('property-tag').innerText = appState.mode === 'active' ? 'Active List' : 'Recently Sold';
+            document.getElementById('actual-price-lbl').innerText = appState.mode === 'active' ? 'Actual List Price' : 'Actual Sold Price';
+            
+            document.getElementById('metric-beds').innerText = property.beds;
+            document.getElementById('metric-baths').innerText = property.baths;
+            document.getElementById('metric-sqft').innerText = property.sqft ? property.sqft.toLocaleString() : 'N/A';
+            document.getElementById('metric-year').innerText = property.year;
+            document.getElementById('metric-type').innerText = property.type;
+        }
+
+        function commitPlayerValuation() {
+            const userRawGuess = document.getElementById('valuation-guess-input').value;
+            if (!userRawGuess || userRawGuess <= 0) { alert('Please enter a valid price speculation.'); return; }
+
+            const numericGuess = parseInt(userRawGuess);
+            const verifiedActualPrice = appState.inventory[appState.currentRoundIndex].price;
+
+            const trackingVariance = Math.abs(numericGuess - verifiedActualPrice) / verifiedActualPrice;
+            const pointsYield = Math.max(0, Math.round((1 - trackingVariance) * 1000));
+
+            appState.accumulatedScore += pointsYield;
+
+            document.getElementById('valuation-console').classList.add('opacity-40', 'pointer-events-none');
+            document.getElementById('valuation-guess-input').disabled = true;
+
+            document.getElementById('feedback-actual-price').innerText = `$${verifiedActualPrice.toLocaleString()}`;
+            document.getElementById('feedback-points-delta').innerText = `+${pointsYield.toLocaleString()}`;
+            document.getElementById('feedback-lbl-guess').innerText = `$${numericGuess.toLocaleString()}`;
+            
+            const percentageVarianceDisplay = Math.round(trackingVariance * 100);
+            const varianceLabel = document.getElementById('feedback-lbl-variance');
+            if (numericGuess === verifiedActualPrice) {
+                varianceLabel.innerText = "Perfect Match!";
+                varianceLabel.className = "text-emerald-400 font-bold";
+            } else {
+                varianceLabel.innerText = `${percentageVarianceDisplay}% ${numericGuess > verifiedActualPrice ? 'Above' : 'Below'}`;
+                varianceLabel.className = "font-mono font-bold text-pink-400";
+            }
+
+            const matchAccuracyMultiplier = Math.max(0, 1 - trackingVariance);
+            document.getElementById('proximity-bar-fill').style.width = `${matchAccuracyMultiplier * 100}%`;
+
+            document.getElementById('nav-score-display').innerText = appState.accumulatedScore.toLocaleString();
+            document.getElementById('cumulative-score-display').innerText = appState.accumulatedScore.toLocaleString();
+
+            document.getElementById('evaluation-dashboard').classList.remove('hidden');
+        }
+
+        function strokeValueMultiplier() {
+            // Internal metadata evaluation
+        }
+
+        function stepToNextProperty() {
+            if (appState.currentRoundIndex < appState.inventory.length - 1) {
+                appState.currentRoundIndex++;
+                populateRoundMetrics();
+            } else {
+                document.getElementById('screen-gameplay').classList.add('hidden');
+                document.getElementById('screen-summary').classList.remove('hidden');
+                document.getElementById('summary-final-score').innerText = appState.accumulatedScore.toLocaleString();
+                
+                const tierElement = document.getElementById('summary-tier-badge');
+                if (appState.accumulatedScore >= 4500) {
+                    tierElement.innerText = "Elite Broker / Market Legend";
+                } else if (appState.accumulatedScore >= 3500) {
+                    tierElement.innerText = "Licensed Appraiser";
+                } else {
+                    tierElement.innerText = "Casual Casual Zillow Scroller";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
