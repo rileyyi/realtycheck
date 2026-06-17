@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Ops Interview Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface2: #F1F5F9;
+    --border: #E2E8F0;
+    --cyan: #0891B2;
+    --cyan-dim: rgba(8,145,178,0.08);
+    --purple: #7C3AED;
+    --purple-dim: rgba(124,58,237,0.08);
+    --green: #059669;
+    --green-dim: rgba(5,150,105,0.08);
+    --orange: #EA580C;
+    --orange-dim: rgba(234,88,12,0.08);
+    --text: #0F172A;
+    --muted: #64748B;
+    --label: #475569;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .header-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    border: 1px solid rgba(8,145,178,0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  /* NAV TABS */
+  .nav-scroll {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-scroll::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    background: none;
+    border: none;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+  }
+
+  /* MAIN */
+  main { padding: 24px 20px 48px; max-width: 760px; margin: 0 auto; }
+
+  /* SCENARIO PANEL */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .scenario-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .scenario-desc {
+    color: var(--label);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 20px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* TWO-COL GRID */
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 500px) {
+    .grid2 { grid-template-columns: 1fr; }
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--label);
+    margin-bottom: 10px;
+  }
+
+  .card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .card ul li {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .card ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+
+  /* PHASE CARDS */
+  .phases {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .phase-card {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .phase-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+
+  .phase-name {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .phase-toggle {
+    font-size: 18px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .phase-card.open .phase-toggle {
+    transform: rotate(180deg);
+  }
+
+  .phase-body {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .phase-card.open .phase-body { display: block; }
+
+  .phase-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 14px;
+  }
+
+  .phase-body ul li {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .phase-body ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    transform: rotate(45deg);
+  }
+
+  /* Phase color themes */
+  .p1 { background: var(--surface); }
+  .p1 .phase-header { background: rgba(8,145,178,0.03); }
+  .p1 .phase-num { background: var(--cyan-dim); color: var(--cyan); }
+  .p1 .phase-name { color: var(--cyan); }
+  .p1 .phase-body ul li::before { background: var(--cyan); }
+
+  .p2 { background: var(--surface); }
+  .p2 .phase-header { background: rgba(124,58,237,0.03); }
+  .p2 .phase-num { background: var(--purple-dim); color: var(--purple); }
+  .p2 .phase-name { color: var(--purple); }
+  .p2 .phase-body ul li::before { background: var(--purple); }
+
+  .p3 { background: var(--surface); }
+  .p3 .phase-header { background: rgba(5,150,105,0.03); }
+  .p3 .phase-num { background: var(--green-dim); color: var(--green); }
+  .p3 .phase-name { color: var(--green); }
+  .p3 .phase-body ul li::before { background: var(--green); }
+
+  /* KPI ROW */
+  .kpi-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .kpi-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--orange);
+    background: var(--orange-dim);
+    border: 1px solid rgba(234,88,12,0.18);
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 22px 0;
+  }
+
+  /* QUOTE BLOCK */
+  .quote {
+    border-left: 3px solid var(--cyan);
+    padding: 12px 16px;
+    background: var(--cyan-dim);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--label);
+    font-style: italic;
+    margin-bottom: 20px;
+  }
+
+  /* GOALS & METRICS SECTION */
+  :root { --red: #DC2626; --red-dim: rgba(220,38,38,0.06); }
+
+  .hierarchy-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 20px; }
+  .hier-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 13px 16px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .hier-badge {
+    font-family: var(--mono); font-size: 10px; padding: 3px 9px;
+    border-radius: 4px; flex-shrink: 0; font-weight: 700; letter-spacing: 0.06em; margin-top: 1px;
+  }
+  .hier-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .hier-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .connector { width: 2px; height: 8px; background: var(--border); margin-left: 29px; }
+
+  .okr-example {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .okr-o { background: rgba(8,145,178,0.03); border-bottom: 1px solid var(--border); padding: 13px 16px; }
+  .okr-o-label { font-family: var(--mono); font-size: 10px; color: var(--cyan); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .okr-o-text { font-size: 13px; font-weight: 600; color: var(--text); }
+  .okr-krs { padding: 12px 16px; display: flex; flex-direction: column; gap: 9px; }
+  .okr-kr { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); line-height: 1.5; }
+  .kr-label {
+    font-family: var(--mono); font-size: 10px; color: var(--purple);
+    background: var(--purple-dim); padding: 2px 7px; border-radius: 3px;
+    flex-shrink: 0; margin-top: 3px;
+  }
+
+  .indicator-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .indicator-row { grid-template-columns: 1fr; } }
+  .indicator-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+  .ind-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .ind-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+  .ind-ex { font-size: 12px; color: var(--label); padding-left: 14px; position: relative; margin-bottom: 5px; line-height: 1.4; }
+  .ind-ex::before { content: ''; position: absolute; left: 0; top: 6px; width: 5px; height: 5px; border-radius: 50%; }
+
+  .milestone-list { display: flex; flex-direction: column; gap: 0; }
+  .ms-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .ms-item:last-child { border-bottom: none; }
+  .ms-week { font-family: var(--mono); font-size: 11px; color: var(--cyan); background: var(--cyan-dim); padding: 3px 9px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
+  .ms-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .ms-owner { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .avoid-card { background: var(--red-dim); border: 1px solid rgba(220,38,38,0.15); border-radius: 10px; padding: 16px; }
+  .avoid-card .card-title { color: var(--red); }
+  .avoid-card ul li::before { background: var(--red); }
+
+  .two-col-kpi { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .two-col-kpi { grid-template-columns: 1fr; } }
+  .kpi-stage { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+  .kpi-stage-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span class="header-badge">Interview Prep</span>
+    <h1>Product Ops Framework</h1>
+  </div>
+  <div class="nav-scroll">
+    <button class="tab active" onclick="show(0)">Build from Nothing</button>
+    <button class="tab" onclick="show(1)">Customer Support</button>
+    <button class="tab" onclick="show(2)">Subscription Billing</button>
+    <button class="tab" onclick="show(3)">Vendor Management</button>
+    <button class="tab" onclick="show(4)">Feedback Loops</button>
+    <button class="tab" onclick="show(5)">Build vs Buy</button>
+    <button class="tab" onclick="show(6)">Misaligned Partners</button>
+    <button class="tab" onclick="show(7)">Shipping Imperfect</button>
+    <button class="tab" onclick="show(8)">Dead-End Blockers</button>
+    <button class="tab" onclick="show(9)">KPIs, OKRs &amp; Milestones</button>
+  </div>
+</header>
+
+<main>
+
+<!-- 0: BUILD FROM NOTHING -->
+<div class="panel active" id="p0">
+  <h2 class="scenario-title">Building from Nothing</h2>
+  <p class="scenario-desc">The core "build from nothing" story. They want to hear that you spotted the need, made judgment calls on scope, and validated before scaling.</p>
+  <div class="quote">"We didn't have a blueprint. I figured it out by talking to the right people, starting small, and letting data drive the next step."</div>
+
+  <div class="section">
+    <div class="section-label">Short-Term (Week 1-2)</div>
+    <div class="card">
+      <ul>
+        <li>Define the problem in one sentence. What is it costing the business right now?</li>
+        <li>Talk to 5-10 stakeholders. Ask what they've tried before and why it failed.</li>
+        <li>Map any existing workarounds people are already using.</li>
+        <li>Decide what you are NOT solving first. Scope is the first trade-off.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Launch Requirements</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Minimum to Ship</div>
+        <ul>
+          <li>Clear problem statement</li>
+          <li>One sponsor or champion</li>
+          <li>MVP tool or process live</li>
+          <li>One measurable success metric</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Key Factors</div>
+        <ul>
+          <li>Team bandwidth constraints</li>
+          <li>Time pressure from leadership</li>
+          <li>Regulatory or compliance needs</li>
+          <li>Stakeholder alignment across teams</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Foundation / MVP</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Solve the core problem only. Ignore adjacent problems for now.</li>
+          <li>Use manual processes where possible. Automation comes later.</li>
+          <li>Pick the off-the-shelf tool that gets you moving fastest.</li>
+          <li>Set one SLA or success metric. Measure it immediately.</li>
+          <li>Get signal: is this actually solving the problem?</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Optimize</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Automate the most repetitive manual steps.</li>
+          <li>Add reporting and dashboards for visibility.</li>
+          <li>Establish feedback loops with adjacent teams.</li>
+          <li>Expand scope to adjacent problems now that core is proven.</li>
+          <li>Measure impact versus your Phase 1 baseline.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Scale</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Full automation where ROI justifies the engineering lift.</li>
+          <li>Self-service capabilities so the team doesn't bottleneck.</li>
+          <li>Cross-team integration and shared ownership.</li>
+          <li>Revisit build vs buy decisions with real usage data.</li>
+          <li>Document the system so it outlasts any individual.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Pre-launch: signal and willingness to adopt</span>
+    <span class="kpi-chip">Time-to-value</span>
+    <span class="kpi-chip">Post-launch: efficiency gain</span>
+    <span class="kpi-chip">Error rate reduction</span>
+  </div>
+</div>
+
+<!-- 1: CUSTOMER SUPPORT -->
+<div class="panel" id="p1">
+  <h2 class="scenario-title">Customer Support from Scratch</h2>
+  <p class="scenario-desc">No CRM. No SLAs. No process. You need to build a support function that scales and feeds product with real signal.</p>
+  <div class="quote">"I started by understanding what was actually coming in before I touched any tooling. Volume, category, channel. That shaped everything else."</div>
+
+  <div class="section">
+    <div class="section-label">Short-Term (Week 1-2)</div>
+    <div class="card">
+      <ul>
+        <li>Audit incoming requests: volume, categories, and which channels they come through.</li>
+        <li>Pick one ticketing tool and get it live. Zendesk, Intercom, Freshdesk.</li>
+        <li>Set one SLA to start. Example: respond within 4 hours. Not twenty SLAs. One.</li>
+        <li>Identify your top 3 issue categories. Everything else is lower priority.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Launch Requirements</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Minimum to Ship</div>
+        <ul>
+          <li>Ticketing system live</li>
+          <li>At least one trained agent</li>
+          <li>Basic issue tagging set up</li>
+          <li>3-5 knowledge base articles</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Key Factors</div>
+        <ul>
+          <li>Volume and growth rate of requests</li>
+          <li>Which channels customers use</li>
+          <li>Team size and hiring plan</li>
+          <li>Integration path to product team</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Visibility</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Ticketing system live with basic categorization.</li>
+          <li>One SLA target. Measure time to first response.</li>
+          <li>Manual weekly reporting on top issue categories.</li>
+          <li>Support team briefed on workarounds for known edge cases.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Structure</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Knowledge base built out to deflect common tickets.</li>
+          <li>SLAs differentiated by issue type and severity.</li>
+          <li>Bi-weekly support to product feedback loop established.</li>
+          <li>CSAT scoring active on resolved tickets.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Automate</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>AI-assisted triage and routing by category.</li>
+          <li>Automated alerts when ticket volume spikes unexpectedly.</li>
+          <li>Proactive outreach for known issues before customers contact you.</li>
+          <li>Full dashboard visible to product and engineering in real time.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Time to first response</span>
+    <span class="kpi-chip">Resolution time</span>
+    <span class="kpi-chip">CSAT score</span>
+    <span class="kpi-chip">Ticket deflection rate</span>
+    <span class="kpi-chip">Repeat contact rate</span>
+  </div>
+</div>
+
+<!-- 2: SUBSCRIPTION BILLING -->
+<div class="panel" id="p2">
+  <h2 class="scenario-title">Subscription Billing Platform</h2>
+  <p class="scenario-desc">No billing system exists. You need to stand one up without burning engineering cycles on something that isn't your differentiator.</p>
+  <div class="quote">"Billing is not our competitive advantage. I used Stripe to get to market fast, measured what broke, and only considered building when the math justified it."</div>
+
+  <div class="section">
+    <div class="section-label">Short-Term (Week 1-2)</div>
+    <div class="card">
+      <ul>
+        <li>Map your actual billing requirements: currencies, cycles, proration, dunning.</li>
+        <li>Evaluate Stripe, Zuora, and Chargebee against those requirements.</li>
+        <li>Talk to finance on reporting requirements before you pick a tool.</li>
+        <li>Separate must-haves from nice-to-haves. Launch on must-haves only.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Launch Requirements</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Minimum to Ship</div>
+        <ul>
+          <li>Payment processor integrated</li>
+          <li>Core subscription tiers live</li>
+          <li>Basic dunning for failed payments</li>
+          <li>Finance reporting baseline in place</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Key Factors</div>
+        <ul>
+          <li>Transaction volume and fee math at scale</li>
+          <li>Engineering bandwidth: build vs buy</li>
+          <li>Geographic and currency requirements</li>
+          <li>Compliance: PCI, SOC2</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">MVP Billing</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Stripe or equivalent integrated and taking payments.</li>
+          <li>Core plans live. No custom pricing or exceptions yet.</li>
+          <li>Basic dunning enabled. Monitor failed payment rate weekly.</li>
+          <li>Manual reconciliation with finance until volume justifies automation.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Optimize</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Proration and upgrade/downgrade logic implemented.</li>
+          <li>Automated reconciliation with finance systems.</li>
+          <li>Cohort reporting live: MRR, churn, expansion revenue.</li>
+          <li>Coupon, trial, and discount management active.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Scale or Build</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Revisit build vs buy when fees become a material cost.</li>
+          <li>Advanced dunning sequences by customer segment.</li>
+          <li>Revenue recognition automation for accounting compliance.</li>
+          <li>Multi-currency and multi-region support if needed.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Payment success rate</span>
+    <span class="kpi-chip">Failed payment recovery rate</span>
+    <span class="kpi-chip">MRR</span>
+    <span class="kpi-chip">Churn rate</span>
+    <span class="kpi-chip">Expansion MRR</span>
+  </div>
+</div>
+
+<!-- 3: VENDOR MANAGEMENT -->
+<div class="panel" id="p3">
+  <h2 class="scenario-title">Vendor Management from Scratch</h2>
+  <p class="scenario-desc">Procurement is chaos. Contracts everywhere, no tracking, no process. You need to create a vendor management function without a foundation.</p>
+  <div class="quote">"I came in with a hypothesis based on spend data, not a blank slate. I validated it with finance and legal, then built around what I confirmed."</div>
+
+  <div class="section">
+    <div class="section-label">Short-Term (Week 1-2)</div>
+    <div class="card">
+      <ul>
+        <li>Pull spend reports. Rank vendors by cost. That's your starting prioritization.</li>
+        <li>Collect all existing contracts into one place. Even a shared folder counts.</li>
+        <li>Interview finance and legal: what's their biggest pain right now?</li>
+        <li>Validate your top-10 list with finance. They may reprioritize based on operational risk.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Launch Requirements</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Minimum to Ship</div>
+        <ul>
+          <li>Central contract repository</li>
+          <li>Approval workflow (even email-based)</li>
+          <li>Renewal calendar for top vendors</li>
+          <li>Vendor scorecard template</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Key Factors</div>
+        <ul>
+          <li>Vendor concentration risk</li>
+          <li>Upcoming renewal dates</li>
+          <li>SLA violations already occurring</li>
+          <li>Cost optimization opportunities</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Visibility</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>All contracts in one place. Top 10 vendors tracked with renewal dates.</li>
+          <li>Basic renewal alerts set up. No surprises.</li>
+          <li>Lightweight approval process for any new vendor spend.</li>
+          <li>Manual weekly check on upcoming renewals.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Process</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Full vendor onboarding checklist standardized.</li>
+          <li>Quarterly vendor reviews with SLA tracking.</li>
+          <li>Escalation path defined when vendors miss SLAs.</li>
+          <li>Spend analytics dashboard visible to leadership.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Optimize</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Vendor consolidation strategy implemented where overlap exists.</li>
+          <li>Renegotiation cycles tied to performance and spend data.</li>
+          <li>Preferred vendor program to streamline future procurement.</li>
+          <li>Automated renewal reminders with lead time built in.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Contract coverage rate</span>
+    <span class="kpi-chip">On-time renewal rate</span>
+    <span class="kpi-chip">Vendor SLA compliance</span>
+    <span class="kpi-chip">Cost savings from renegotiation</span>
+  </div>
+</div>
+
+<!-- 4: FEEDBACK LOOPS -->
+<div class="panel" id="p4">
+  <h2 class="scenario-title">Support to Product Feedback Loop</h2>
+  <p class="scenario-desc">The loop dies on paper when nobody owns it. What makes it real is ownership, low friction, and closing the loop so people see it matters.</p>
+  <div class="quote">"A process nobody owns is not a process. Someone's job is to pull the patterns, bring specifics to product, and tell support when it shipped."</div>
+
+  <div class="section">
+    <div class="section-label">The 5-Step Framework</div>
+    <div class="card">
+      <ul>
+        <li><strong>Own it</strong> - Assign one person. If it's everyone's job it's nobody's job.</li>
+        <li><strong>Surface patterns</strong> - Pull data from tickets weekly. Spot repeating issues by volume.</li>
+        <li><strong>Make it specific</strong> - Don't bring vague complaints. Bring "17 tickets this week about X."</li>
+        <li><strong>Close the loop</strong> - When product ships a fix, tell support. They need to see impact.</li>
+        <li><strong>Measure it</strong> - Track how many support-sourced issues product actually ships.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Launch Requirements</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Minimum to Ship</div>
+        <ul>
+          <li>Ticketing system with tagging</li>
+          <li>One assigned owner</li>
+          <li>Bi-weekly cadence set</li>
+          <li>Product team buy-in confirmed</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Key Factors</div>
+        <ul>
+          <li>Volume of tickets to analyze</li>
+          <li>How fast product can absorb input</li>
+          <li>Quality of tagging and categorization</li>
+          <li>Visibility that feedback was acted on</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Manual Loop</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Owner manually pulls top issues weekly from tickets.</li>
+          <li>Top 3-5 issues brought to product in bi-weekly sync with specifics and volume.</li>
+          <li>Issues logged in a shared tracker visible to both teams.</li>
+          <li>First closed-loop notification when a fix ships from support intel.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Structured</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Dashboard showing top issues by volume and trend.</li>
+          <li>Formal intake process: support-sourced issues added to product backlog with data.</li>
+          <li>Closed-loop notification system when related tickets decrease post-fix.</li>
+          <li>Support team sees the connection between their reporting and product decisions.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Systematic</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Automated tagging surfaces patterns without manual effort.</li>
+          <li>Real-time visibility for product into support volume by issue type.</li>
+          <li>Support-sourced issues tracked through the full product lifecycle.</li>
+          <li>Metric tracked: percentage of support-sourced issues shipped each quarter.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Support-to-product issue conversion rate</span>
+    <span class="kpi-chip">Time from flag to shipped fix</span>
+    <span class="kpi-chip">Ticket volume reduction on known issues</span>
+    <span class="kpi-chip">CSAT improvement</span>
+  </div>
+</div>
+
+<!-- 5: BUILD VS BUY -->
+<div class="panel" id="p5">
+  <h2 class="scenario-title">Build vs Buy Decision</h2>
+  <p class="scenario-desc">The core question: where should you spend your team's limited engineering capacity? Buy for plumbing. Build for differentiation.</p>
+  <div class="quote">"Billing is not our competitive advantage. Our product is. So I bought Stripe and freed the team to build what actually moves the needle."</div>
+
+  <div class="section">
+    <div class="section-label">Decision Framework</div>
+    <div class="card">
+      <ul>
+        <li><strong>Is it core to your differentiation?</strong> If yes, lean build. If no, lean buy.</li>
+        <li><strong>What's the math?</strong> Cost to buy over 1 year vs cost to build in engineering hours.</li>
+        <li><strong>What's your time constraint?</strong> Buying gets you to market faster. Building takes 3-6 months minimum.</li>
+        <li><strong>What's the vendor risk?</strong> If their roadmap diverges from yours, what's your exit path?</li>
+        <li><strong>What's your learning stage?</strong> Buy to validate. Build once you know exactly what you need.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Trigger to Revisit and Build</div>
+    <div class="card">
+      <ul>
+        <li>Cost savings justify the engineering lift with clear ROI math.</li>
+        <li>The tool is limiting a core product capability, not just a nice-to-have.</li>
+        <li>Vendor reliability has become a business risk.</li>
+        <li>You now know exactly what you need. Pre-product-market-fit, you usually don't.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Buy and Validate</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Pick the off-the-shelf option that covers your must-haves.</li>
+          <li>Run it for 6-12 months in production with real usage.</li>
+          <li>Document every limitation and gap as they surface. This is your build spec.</li>
+          <li>Track actual cost vs budget. Be honest about fee math at scale.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Optimize or Replace</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Customize or extend the tool if it gets you 80% there cheaply.</li>
+          <li>Renegotiate pricing if your volume gives you leverage.</li>
+          <li>Evaluate alternatives if the current tool has a fundamental ceiling.</li>
+          <li>Reassess the build threshold with real data, not assumptions.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Build if Justified</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Clear ROI case: savings exceed build cost within 12-18 months.</li>
+          <li>Engineering capacity available without sacrificing product roadmap.</li>
+          <li>Migration plan from old tool with minimal disruption.</li>
+          <li>Sunset timeline documented and communicated.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Time-to-launch with bought tool</span>
+    <span class="kpi-chip">Cost per unit vs build alternative</span>
+    <span class="kpi-chip">Limitations encountered per quarter</span>
+    <span class="kpi-chip">Engineering hours freed up</span>
+  </div>
+</div>
+
+<!-- 6: MISALIGNED PARTNERS -->
+<div class="panel" id="p6">
+  <h2 class="scenario-title">Managing Misaligned Partners</h2>
+  <p class="scenario-desc">Their roadmap is not your roadmap. How do you move your priorities forward without blowing up a relationship you depend on?</p>
+  <div class="quote">"I don't go in with demands. I go in with curiosity about their constraints, and then I find the overlap."</div>
+
+  <div class="section">
+    <div class="section-label">Short-Term Actions</div>
+    <div class="card">
+      <ul>
+        <li>Ask directly what their priorities are. Don't assume. Understand their constraints.</li>
+        <li>Find the overlap: where does your need benefit their business too?</li>
+        <li>Frame your asks in their terms. "This reduces your support burden too."</li>
+        <li>Identify the minimum you actually need vs the full ask. Create room to negotiate.</li>
+        <li>Escalate internally if the misalignment is blocking a critical path. Don't wait.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Key Factors</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Assess the Situation</div>
+        <ul>
+          <li>Relationship health vs urgency of need</li>
+          <li>What leverage do you have?</li>
+          <li>What can you do without them short-term?</li>
+          <li>What's the cost of a damaged relationship?</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">What NOT to Do</div>
+        <ul>
+          <li>Go in hot or accusatory</li>
+          <li>Escalate before trying to solve it</li>
+          <li>Accept misalignment indefinitely without flagging</li>
+          <li>Overpromise internally what the partner will deliver</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Diagnose</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Map their constraints honestly. Budget? Capacity? Their own customers pulling them?</li>
+          <li>Find quick wins that work for both sides. Prove the relationship delivers value.</li>
+          <li>Define the minimum you need to keep your project moving.</li>
+          <li>Set a clear communication cadence so surprises don't compound misalignment.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Align</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Joint roadmap or shared goals document. Both sides see the same north star.</li>
+          <li>Regular check-ins with a defined agenda. Not just escalation calls.</li>
+          <li>Named escalation path if things get stuck. Agreed on upfront.</li>
+          <li>Celebrate shared wins. Reinforce that the relationship delivers.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Sustain</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Quarterly relationship reviews. Are we still aligned? What's changed?</li>
+          <li>Mutual dependency built in. They need you as much as you need them.</li>
+          <li>Executive-level relationship maintained in parallel to working-level.</li>
+          <li>Contingency plan ready if the relationship breaks. You're not held hostage.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Deliverables met vs agreed timeline</span>
+    <span class="kpi-chip">Escalation frequency (should decrease)</span>
+    <span class="kpi-chip">Partner satisfaction signal</span>
+    <span class="kpi-chip">Blockers resolved without escalation</span>
+  </div>
+</div>
+
+<!-- 7: SHIPPING IMPERFECT -->
+<div class="panel" id="p7">
+  <h2 class="scenario-title">Shipping Something Imperfect</h2>
+  <p class="scenario-desc">Perfect is the enemy of shipped. The skill is knowing what "good enough" means for your specific context, and owning that call.</p>
+  <div class="quote">"The core flow works. Customers can onboard. Support can handle edge cases manually. That's good enough. Ship it, measure it, and build on what you learn."</div>
+
+  <div class="section">
+    <div class="section-label">How to Decide "Good Enough"</div>
+    <div class="card">
+      <ul>
+        <li>Measure against the actual requirement, not an imaginary ideal.</li>
+        <li>Categorize known issues: true blockers vs annoyances. Ship with annoyances.</li>
+        <li>Can support handle edge cases manually for now? If yes, ship it.</li>
+        <li>What's the cost of NOT shipping? Lost revenue, lost learning, lost time. Factor that in.</li>
+        <li>Can you fix fast post-launch? If your iteration cycle is quick, the bar for "done" can be lower.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Launch Requirements</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Minimum to Ship</div>
+        <ul>
+          <li>Core user flow works end-to-end</li>
+          <li>Blockers resolved or mitigated</li>
+          <li>Support briefed on workarounds</li>
+          <li>Monitoring and alerts live</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Key Factors</div>
+        <ul>
+          <li>Risk of shipping vs risk of waiting</li>
+          <li>User trust impact if it breaks</li>
+          <li>Ability to iterate fast post-launch</li>
+          <li>Stakeholder alignment on known issues</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Ship the MVP</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Core flow tested and working end-to-end.</li>
+          <li>Known issues documented and shared with stakeholders. No surprises.</li>
+          <li>Support team briefed. Edge cases handled manually for now.</li>
+          <li>Monitoring and error alerts active from minute one.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Stabilize</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Fix issues ranked by frequency and severity in real usage. Not by gut.</li>
+          <li>Measure actual vs expected support volume. Where did we underestimate?</li>
+          <li>User feedback collected and triaged into backlog.</li>
+          <li>Unblock the edge cases that are generating the most manual work.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Polish</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Systematically address technical debt in priority order.</li>
+          <li>Automate edge case handling that support is still doing manually.</li>
+          <li>Improve performance and reliability based on real load data.</li>
+          <li>Revisit original scope. Is what you shipped solving the right problem?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Error rate post-launch</span>
+    <span class="kpi-chip">Support ticket volume from known issues</span>
+    <span class="kpi-chip">User activation rate</span>
+    <span class="kpi-chip">Time to fix critical post-launch bugs</span>
+  </div>
+</div>
+
+<!-- 8: DEAD-END BLOCKERS -->
+<div class="panel" id="p8">
+  <h2 class="scenario-title">Blockers with No Solution</h2>
+  <p class="scenario-desc">Sometimes the blocker is real and the front door is locked. The skill is finding the side door without freezing or pretending.</p>
+  <div class="quote">"I don't pretend it's solvable when it's not. I name it clearly, find the adjacent path, and protect the team's momentum on everything else."</div>
+
+  <div class="section">
+    <div class="section-label">The Framework</div>
+    <div class="card">
+      <ul>
+        <li><strong>Name it clearly</strong> - Tell stakeholders what you're stuck on, what you've tried, and why you're stuck. Clarity is not failure.</li>
+        <li><strong>Separate what you control</strong> - Some blockers are yours to solve. Some need a decision above your level. Know which is which.</li>
+        <li><strong>Find the side door</strong> - Work around it, not through it. Proxy metric, different market, manual workaround, partial solution.</li>
+        <li><strong>Escalate with options</strong> - Never bring just the problem. Bring 2-3 paths forward and a recommendation.</li>
+        <li><strong>Park and protect momentum</strong> - If it's genuinely stuck, document it, redirect the team to what can move, and revisit when constraints change.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Key Questions to Ask</div>
+    <div class="card">
+      <ul>
+        <li>Is this blocker temporary or permanent?</li>
+        <li>Does it block everything, or just one path forward?</li>
+        <li>What's the cost of waiting vs finding a workaround?</li>
+        <li>Who has the authority to unblock this? Have you actually asked them?</li>
+        <li>What assumption are we making that might not be true?</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:12px;">Phases</div>
+  <div class="phases">
+    <div class="phase-card p1 open">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">01</span>
+        <span class="phase-name">Diagnose the Blocker</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Root cause analysis. Why exactly is this stuck? Get specific.</li>
+          <li>Who needs to be involved to move it? Name them.</li>
+          <li>What's the minimum needed to unblock even partial progress?</li>
+          <li>Try at least 2-3 alternative approaches before calling it a dead end.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p2">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">02</span>
+        <span class="phase-name">Work Around It</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Proxy metric if you can't get real data.</li>
+          <li>Different market or segment if the primary path is blocked.</li>
+          <li>Manual process if the automated path is stuck.</li>
+          <li>Partial solution to maintain momentum and demonstrate progress.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="phase-card p3">
+      <div class="phase-header" onclick="toggle(this)">
+        <span class="phase-num">03</span>
+        <span class="phase-name">Resolve or Accept</span>
+        <span class="phase-toggle">&#8964;</span>
+      </div>
+      <div class="phase-body">
+        <ul>
+          <li>Escalated decision made at the right level with full context provided.</li>
+          <li>Permanent workaround accepted and documented with rationale.</li>
+          <li>Team redirected to what can actually move. Don't let one blocker stall everything.</li>
+          <li>Revisit trigger set: "We check this again when X changes."</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">KPIs</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">Time-to-resolution or workaround</span>
+    <span class="kpi-chip">% of blockers resolved vs accepted</span>
+    <span class="kpi-chip">Team momentum on non-blocked tracks</span>
+    <span class="kpi-chip">Escalations that required exec decision</span>
+  </div>
+</div>
+
+<!-- 9: KPIs, OKRs & MILESTONES -->
+<div class="panel" id="p9">
+  <h2 class="scenario-title">KPIs, OKRs &amp; Milestones</h2>
+  <p class="scenario-desc">Three tools that work together. Confuse them and you measure everything but learn nothing. Use them right and they keep your team aligned, honest, and moving.</p>
+  <div class="quote">"An OKR tells you where you're going. A milestone tells you if you're on track to get there. A KPI tells you if the engine is running well day to day."</div>
+
+  <!-- HOW THEY FIT -->
+  <div class="section">
+    <div class="section-label">How They Fit Together</div>
+    <div class="hierarchy-row">
+      <div class="hier-item">
+        <span class="hier-badge" style="background:var(--cyan-dim);color:var(--cyan);">OKR</span>
+        <div>
+          <div class="hier-label">Direction</div>
+          <div class="hier-desc">Where are we going, and how will we know when we get there? Quarterly. Qualitative objective + quantitative key results.</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="hier-item">
+        <span class="hier-badge" style="background:var(--purple-dim);color:var(--purple);">Milestones</span>
+        <div>
+          <div class="hier-label">Execution</div>
+          <div class="hier-desc">Are we on track? Binary checkpoints with owners and dates. Unlock the next phase of work when hit.</div>
+        </div>
+      </div>
+      <div class="connector"></div>
+      <div class="hier-item">
+        <span class="hier-badge" style="background:var(--green-dim);color:var(--green);">KPIs</span>
+        <div>
+          <div class="hier-label">Health</div>
+          <div class="hier-desc">How is the engine running? Ongoing measurement. Tracked weekly or monthly. Tells you when something needs attention.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- OKRs -->
+  <div class="section">
+    <div class="section-label">How to Write OKRs</div>
+    <div class="card" style="margin-bottom:14px;">
+      <ul>
+        <li><strong>O (Objective)</strong> - Qualitative, inspiring, time-bound. Answers "what do we want to achieve this quarter?" Should feel slightly ambitious.</li>
+        <li><strong>KR (Key Result)</strong> - 2 to 4 per objective. Quantitative and specific. Answers "how will we know we achieved it?" Must be measurable, not a task.</li>
+        <li><strong>Cadence</strong> - Set quarterly. Check in monthly. 70% achievement is often considered success because KRs should be stretch targets.</li>
+        <li><strong>Common mistake</strong> - Writing KRs as to-do lists. "Launch the support tool" is a milestone. "Reduce response time from 8h to 2h" is a key result.</li>
+      </ul>
+    </div>
+
+    <div class="okr-example">
+      <div class="okr-o">
+        <div class="okr-o-label">Objective</div>
+        <div class="okr-o-text">Build a customer support function that makes customers feel heard and reduces churn from support failures</div>
+      </div>
+      <div class="okr-krs">
+        <div class="okr-kr"><span class="kr-label">KR1</span>Reduce average response time from 8 hours to under 2 hours by end of Q3</div>
+        <div class="okr-kr"><span class="kr-label">KR2</span>Achieve CSAT score of 4.5 or above on 90% of resolved tickets</div>
+        <div class="okr-kr"><span class="kr-label">KR3</span>Deflect 30% of tickets through self-serve knowledge base</div>
+      </div>
+    </div>
+
+    <div class="okr-example">
+      <div class="okr-o">
+        <div class="okr-o-label">Objective</div>
+        <div class="okr-o-text">Establish a vendor management function that eliminates procurement chaos and protects the business from contract risk</div>
+      </div>
+      <div class="okr-krs">
+        <div class="okr-kr"><span class="kr-label">KR1</span>100% of active vendor contracts collected and catalogued by Week 4</div>
+        <div class="okr-kr"><span class="kr-label">KR2</span>Zero contract renewals missed this quarter</div>
+        <div class="okr-kr"><span class="kr-label">KR3</span>Vendor approval process adopted by finance and legal with zero bypasses</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- KPIs -->
+  <div class="section">
+    <div class="section-label">How to Choose KPIs</div>
+    <div class="card" style="margin-bottom:14px;">
+      <ul>
+        <li><strong>Pick 3 to 5 max.</strong> More than that and nobody watches them.</li>
+        <li><strong>Each KPI must drive a decision.</strong> If you couldn't act on it, don't track it.</li>
+        <li><strong>Balance leading and lagging indicators.</strong> Leading tells you what's coming. Lagging tells you what happened.</li>
+        <li><strong>Avoid vanity metrics.</strong> Total signups looks great until you see nobody activates. Track what reveals truth, not what looks good in a deck.</li>
+      </ul>
+    </div>
+
+    <div class="section-label" style="margin-bottom:10px;">Leading vs Lagging</div>
+    <div class="indicator-row" style="margin-bottom:20px;">
+      <div class="indicator-card">
+        <div class="ind-label" style="color:var(--cyan);">Leading</div>
+        <div class="ind-desc">Predictive. You can influence these now. They tell you what's coming before it shows up in outcomes.</div>
+        <div class="ind-ex" style="color:var(--label);" before-bg="var(--cyan)">
+          <span class="ind-ex">Ticket deflection rate</span>
+          <span class="ind-ex">Agent first-response time</span>
+          <span class="ind-ex">Trial activation rate</span>
+          <span class="ind-ex">Support-to-product issue conversion</span>
+        </div>
+      </div>
+      <div class="indicator-card">
+        <div class="ind-label" style="color:var(--purple);">Lagging</div>
+        <div class="ind-desc">Outcome-based. Tells you what already happened. You can't change them now, but they validate your direction.</div>
+        <div class="ind-ex">
+          <span class="ind-ex">CSAT score</span>
+          <span class="ind-ex">Monthly churn rate</span>
+          <span class="ind-ex">Revenue from retained customers</span>
+          <span class="ind-ex">NPS trend</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:10px;">Pre-Launch vs Post-Launch KPIs</div>
+    <div class="two-col-kpi">
+      <div class="kpi-stage">
+        <div class="kpi-stage-label" style="color:var(--cyan);">Pre-Launch</div>
+        <div class="card" style="border:none;padding:0;background:none;box-shadow:none;">
+          <ul>
+            <li>Signal: will people use or pay for this?</li>
+            <li>Activation: do they complete the core flow?</li>
+            <li>Early retention: do they come back in week 2?</li>
+            <li>Support volume: is it overwhelming or manageable?</li>
+          </ul>
+        </div>
+      </div>
+      <div class="kpi-stage">
+        <div class="kpi-stage-label" style="color:var(--green);">Post-Launch</div>
+        <div class="card" style="border:none;padding:0;background:none;box-shadow:none;">
+          <ul>
+            <li>MRR and churn by cohort</li>
+            <li>Expansion revenue from upgrades</li>
+            <li>Error rate and uptime</li>
+            <li>CSAT and NPS trends over time</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- MILESTONES -->
+  <div class="section">
+    <div class="section-label">How to Set Milestones</div>
+    <div class="card" style="margin-bottom:14px;">
+      <ul>
+        <li><strong>Binary.</strong> Either done or not done. No "70% complete" on a milestone. That's a task.</li>
+        <li><strong>Time-bound with a specific date.</strong> "Q3" is not a date. "July 31" is a date.</li>
+        <li><strong>Owned by someone.</strong> A milestone without an owner is a wish.</li>
+        <li><strong>Gates, not checkboxes.</strong> Hitting a milestone should unlock the next phase of work.</li>
+      </ul>
+    </div>
+
+    <div class="section-label" style="margin-bottom:10px;">Example: Standing Up Customer Support</div>
+    <div class="card">
+      <div class="milestone-list">
+        <div class="ms-item">
+          <span class="ms-week">Wk 2</span>
+          <div>
+            <div class="ms-text">Ticketing system live and accepting requests</div>
+            <div class="ms-owner">Owner: Head of Support</div>
+          </div>
+        </div>
+        <div class="ms-item">
+          <span class="ms-week">Wk 4</span>
+          <div>
+            <div class="ms-text">All support agents trained and handling tickets independently</div>
+            <div class="ms-owner">Owner: Head of Support</div>
+          </div>
+        </div>
+        <div class="ms-item">
+          <span class="ms-week">Wk 6</span>
+          <div>
+            <div class="ms-text">Knowledge base live with 20+ articles covering top 10 issue categories</div>
+            <div class="ms-owner">Owner: Ops Lead</div>
+          </div>
+        </div>
+        <div class="ms-item">
+          <span class="ms-week">Wk 10</span>
+          <div>
+            <div class="ms-text">CSAT tracking active and first report shared with product team</div>
+            <div class="ms-owner">Owner: Ops Lead</div>
+          </div>
+        </div>
+        <div class="ms-item">
+          <span class="ms-week">Wk 12</span>
+          <div>
+            <div class="ms-text">First support-to-product feedback loop completed with issues logged in backlog</div>
+            <div class="ms-owner">Owner: PM + Support Lead</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- MISTAKES -->
+  <div class="section">
+    <div class="section-label">Common Mistakes to Avoid</div>
+    <div class="avoid-card">
+      <div class="card-title">What Goes Wrong</div>
+      <ul>
+        <li>Too many KPIs. If everything is a priority, nothing is. Pick 3 to 5 and own them.</li>
+        <li>KRs that are just tasks. "Launch the tool" is not a key result. "Reduce response time by 60%" is.</li>
+        <li>OKRs set in January and forgotten until December. Check in monthly or they're theater.</li>
+        <li>Milestones without owners. Someone's name goes on every milestone. No name means no accountability.</li>
+        <li>Tracking what's easy to measure instead of what matters. Vanity metrics make decks look good and decisions go bad.</li>
+        <li>Conflating milestones and KPIs. A milestone is done once. A KPI is watched forever.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <div class="section-label" style="margin-bottom:10px;">Quick Reference</div>
+  <div class="kpi-row">
+    <span class="kpi-chip">OKR = direction &amp; success criteria</span>
+    <span class="kpi-chip">Milestones = execution gates</span>
+    <span class="kpi-chip">KPIs = ongoing health signals</span>
+    <span class="kpi-chip">Leading = predictive</span>
+    <span class="kpi-chip">Lagging = outcome</span>
+    <span class="kpi-chip">3-5 KPIs max</span>
+  </div>
+</div>
+
+</main>
+
+<script>
+  const panels = document.querySelectorAll('.panel');
+  const tabs = document.querySelectorAll('.tab');
+
+  function show(idx) {
+    panels.forEach((p, i) => p.classList.toggle('active', i === idx));
+    tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+    tabs[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggle(header) {
+    const card = header.closest('.phase-card');
+    card.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
